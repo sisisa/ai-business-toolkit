@@ -35,9 +35,6 @@ export default function Home() {
           </a>
         </div>
         
-        <p className="mt-12 text-sm text-gray-500">
-          Built with Next.js 15 + Bun + LangChain.js + TypeScript
-        </p>
       </div>
     </div>
   );
