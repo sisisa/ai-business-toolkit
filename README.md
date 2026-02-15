@@ -1,33 +1,80 @@
-# LangChain × TypeScript ポートフォリオ
+# AI ビジネスツールキット（TypeScript × Next.js × LLM）
 
-Bun + Next.js + LangChain で構築した **3つの実践アプリ** のデモリポジトリです。RAG・プロンプトエンジニアリング・マルチステップチェーンを実装し、LLMアプリ開発の実務スキルをポートフォリオとして示します。
+TypeScript / Next.js（App Router）を用いて構築した  
+**業務向けAIツールのポートフォリオ**です。
+
+LLM（OpenAI）を活用し、**要約・QA（RAG）・コードレビュー・ワークフロー設計**といった  
+実務で想定されるAI活用パターンを、API・UI両面から実装しています。
+
+各機能は Next.js の `app/` ディレクトリ配下に UI を持ち、  
+LLM・RAG・ワークフローなどのロジックは `lib/` に分離して実装しています。
 
 [![Vercel Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sisisa/langchain-portfolio)
 
 ---
 
-## デモアプリ一覧
+## 実装済みツール一覧
 
-| アプリ | パス | 概要 | 主な技術 |
-|--------|------|------|----------|
-| **自分専用QA（RAG）** | [/rag](/rag) | 文書検索＋LLM回答 | RAG, 簡易ベクター検索 |
-| **コードレビューBot** | [/review](/review) | 構造化コードレビュー | Prompt Engineering, 構造化出力 |
-| **ワークフロー可視化** | [/workflow](/workflow) | LLMチェーン可視化 | Multi-step Chain, LCEL |
+| 機能 | ルート | 想定業務 |
+|------|-------|---------|
+| 社内QA（RAG） | `/rag` | ドキュメント検索 |
+| コードレビュー支援 | `/review` | PRレビュー補助 |
+| ワークフロー可視化 | `/workflow` | 処理設計の説明 |
+
+各ルートは `page.tsx` を UI エントリとし、  
+AI処理は `lib/` 配下のモジュールを呼び出す構成です。
 
 ---
 
-## 3つのアプリを作る流れとツール
+## ディレクトリ構造
+```text
+app/
+├ rag/
+│ └ page.tsx        # UI / API呼び出し
+├ review/
+│ └ page.tsx
+├ workflow/
+│ └ page.tsx
 
-### 必要な環境・ツール
+lib/
+├ llm/
+│ └ client.ts       # LLM共通処理
+├ rag/
+│ └ pipeline.ts    # RAGロジック
+├ review/
+│ └ prompt.ts
+├ workflow/
+│ └ chain.ts
+```
 
-| 種別 | ツール | 用途 |
-|------|--------|------|
-| ランタイム | [Bun](https://bun.sh/) | パッケージ管理・スクリプト実行（`bun install` / `bun run`） |
-| フレームワーク | [Next.js](https://nextjs.org/) | App Router, API Routes, フロント |
-| LLM | [LangChain.js](https://js.langchain.com/) | チェーン・プロンプト・パーサー |
-| モデル | [OpenAI API](https://platform.openai.com/) | GPT-4o-mini 等（環境変数で指定） |
-| スタイル | [Tailwind CSS](https://tailwindcss.com/) | UI |
-| 型・検証 | [TypeScript](https://www.typescriptlang.org/) + [Zod](https://zod.dev/) | 型安全・構造化出力 |
+---
+
+## アーキテクチャ概要
+
+- **フロントエンド**  
+  - Next.js App Router  
+  - Tailwind CSS  
+
+- **API / サーバー処理**  
+  - Next.js API Routes  
+  - LangChain.js  
+
+- **LLM / AI**  
+  - OpenAI API（GPT-4o-mini）  
+  - Prompt Engineering  
+  - Zod による構造化レスポンス  
+
+## 使用技術
+
+| 区分 | 技術 |
+|-----|------|
+| 言語 | TypeScript |
+| フレームワーク | Next.js（App Router） |
+| LLMフレームワーク | LangChain.js |
+| モデル | OpenAI API |
+| ランタイム | Bun |
+| UI | Tailwind CSS |
+| 型・検証 | Zod |
 
 ### 開発の流れ（共通）
 
