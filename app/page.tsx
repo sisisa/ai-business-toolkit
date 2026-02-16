@@ -8,8 +8,8 @@ export default function Home() {
         <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
           LangChainの実践ポートフォリオ。RAG、構造化プロンプト、チェーンを体感。
         </p>
-        
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+
+       <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           <a href="/rag" className="group p-8 bg-white/70 backdrop-blur-sm rounded-2xl border hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
               📚

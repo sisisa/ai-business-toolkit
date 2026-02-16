@@ -6,89 +6,111 @@ export default function RAGDemo() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [sources, setSources] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const addDocs = (text: string) => {
-    const chunks = text.split(/[\n。]\s+/).map(s => s.trim()).filter(Boolean);
-    setDocs(chunks.slice(0, 10)); // 最大10チャンク
-  };
-
-  const simpleSimilarity = (a: string, b: string) => {
-    const wordsA = a.toLowerCase().split(/\s+/);
-    const wordsB = b.toLowerCase().split(/\s+/);
-    const common = wordsA.filter(w => wordsB.includes(w)).length;
-    return common / Math.sqrt(wordsA.length * wordsB.length) || 0;
+    const chunks = text
+      .split(/[\n。]\s+/)
+      .map(s => s.trim())
+      .filter(Boolean)
+      .slice(0, 10);
+    setDocs(chunks);
   };
 
   const ask = async () => {
-    if (!docs.length) return;
+    if (!docs.length || !question) return;
 
-    const relevant = docs
-      .map((doc, i) => ({
-        doc,
-        score: simpleSimilarity(question, doc),
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-      .map(d => d.doc);
+    setLoading(true);
+    setError(null);
+    setAnswer("");
+    setSources([]);
 
-    const template = `以下の文書を参考に質問に答えて。出典も明記してください。
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "rag",
+          payload: {
+            docs,
+            question,
+          },
+        }),
+      });
 
-文書: {context}
-質問: {question}`;
+      if (!res.ok) {
+        throw new Error("API Error");
+      }
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ template, input: { context: relevant.join("\n\n"), question } }),
-    });
-    const { result } = await res.json();
-    
-    setAnswer(result);
-    setSources(relevant);
+      const data = await res.json();
+      setAnswer(data.answer);
+      setSources(data.sources);
+    } catch {
+      setError("質問処理中にエラーが発生しました");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-8">📚 自分専用QA（簡易RAG）</h1>
-      
+    <div className="max-w-2xl mx-auto p-8 space-y-6">
+      <header>
+        <h1 className="text-3xl font-bold">自分専用QA（RAG）</h1>
+        <p className="text-gray-600">
+          メモを貼り付けて質問すると、内容に基づいて回答します
+        </p>
+      </header>
+
       <textarea
         onChange={(e) => addDocs(e.target.value)}
-        placeholder="技術メモや記事を貼り付け...（例：ReactのuseEffectは...）"
-        className="w-full p-4 border rounded-lg h-40 mb-4 font-mono text-sm resize-vertical"
+        placeholder="技術メモや記事を貼り付けてください"
+        className="w-full h-40 p-4 border rounded-lg font-mono text-sm"
       />
-      
-      <div className="flex gap-2 mb-8">
+
+      <div className="flex gap-2">
         <input
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="質問を入力（例：useEffectの依存配列って？）"
-          className="flex-1 p-4 border rounded-lg"
+          placeholder="質問を入力"
+          className="flex-1 p-3 border rounded-lg"
         />
         <button
           onClick={ask}
-          disabled={!docs.length || !question}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+          disabled={loading || !docs.length || !question}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg disabled:opacity-50"
         >
-          質問
+          {loading ? "回答中..." : "質問"}
         </button>
       </div>
 
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          {error}
+        </div>
+      )}
+
       {answer && (
-        <div className="space-y-4">
-          <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
-            <h3 className="font-semibold mb-2">回答</h3>
+        <section className="space-y-4">
+          <div className="p-6 bg-blue-50 rounded-xl border">
+            <h2 className="font-semibold mb-2">回答</h2>
             <p className="whitespace-pre-wrap">{answer}</p>
           </div>
-          
+
           <div className="p-4 bg-gray-100 rounded-lg">
-            <h4 className="font-medium mb-2">出典（{sources.length}件）</h4>
-            {sources.map((src, i) => (
-              <p key={i} className="text-sm text-gray-700 p-2 bg-white rounded border-l-4 border-blue-400 mb-1">
-                {src.slice(0, 100)}...
+            <h3 className="font-medium mb-2">
+              出典（{sources.length}件）
+            </h3>
+            {sources.map((s, i) => (
+              <p
+                key={i}
+                className="text-sm bg-white p-2 rounded border-l-4 border-blue-400 mb-1"
+              >
+                {s.slice(0, 100)}...
               </p>
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );
