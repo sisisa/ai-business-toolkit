@@ -2,7 +2,7 @@
 
 ## 概要
 
-このリポジトリは、（TypeScript × Next.js（App Router）と AI系のフレームワークを用いて  
+このリポジトリは、TypeScript × Next.js（App Router）と AI系のフレームワークを用いて  
 複数の LLM 機能を整理された構造で実装するためのサンプルプロジェクトです。
 
 以下の点を重視しています。
