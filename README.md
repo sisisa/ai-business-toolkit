@@ -1,28 +1,28 @@
 # AI ビジネスツールキット（TypeScript × Next.js × LLM）
 
-TypeScript / Next.js（App Router）を用いて構築した  
-**業務向けAIツールのポートフォリオ**です。
+## 概要
 
-LLM（OpenAI）を活用し、**要約・QA（RAG）・コードレビュー・ワークフロー設計**といった  
-実務で想定されるAI活用パターンを、API・UI両面から実装しています。
+このリポジトリは、（TypeScript × Next.js（App Router）と AI系のフレームワークを用いて  
+複数の LLM 機能を整理された構造で実装するためのサンプルプロジェクトです。
 
-各機能は Next.js の `app/` ディレクトリ配下に UI を持ち、  
-LLM・RAG・ワークフローなどのロジックは `lib/` に分離して実装しています。
+以下の点を重視しています。
 
-[![Vercel Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sisisa/ai-business-toolkit)
+- LLM ロジックを `/lib/ai` 配下に集約
+- API Route は用途別に薄く保つ
+- UI（page.tsx）は API を呼ぶだけに専念
+- review / rag / workflow を同一の設計思想で統一
+
+「とりあえず動く」ではなく、「拡張しても破綻しない構成」を目的としています。
 
 ---
 
-## 実装済みツール一覧
+## 技術スタック
 
-| 機能 | ルート | 想定業務 |
-|------|-------|---------|
-| 社内QA（RAG） | `/rag` | ドキュメント検索 |
-| コードレビュー支援 | `/review` | PRレビュー補助 |
-| ワークフロー可視化 | `/workflow` | 処理設計の説明 |
-
-各ルートは `page.tsx` を UI エントリとし、  
-AI処理は `lib/` 配下のモジュールを呼び出す構成です。
+- Next.js（App Router）
+- TypeScript
+- LangChain（JavaScript）
+- OpenAI API
+- Tailwind CSS（UI 部分）
 
 ---
 
@@ -59,111 +59,131 @@ AI処理は `lib/` 配下のモジュールを呼び出す構成です。
 
 ```
 
----
-
-## アーキテクチャ概要
-
-- **フロントエンド**  
-  - Next.js App Router  
-  - Tailwind CSS  
-
-- **API / サーバー処理**  
-  - Next.js API Routes  
-  - LangChain.js  
-
-- **LLM / AI**  
-  - OpenAI API（GPT-4o-mini）  
-  - Prompt Engineering  
-  - Zod による構造化レスポンス  
-
-## 使用技術
-
-| 区分 | 技術 |
-|-----|------|
-| 言語 | TypeScript |
-| フレームワーク | Next.js（App Router） |
-| LLMフレームワーク | LangChain.js |
-| モデル | OpenAI API |
-| ランタイム | Bun |
-| UI | Tailwind CSS |
-| 型・検証 | Zod |
-
-### 技術スタック
-
-
-- **ランタイム**: Bun
-- **フロント / API**: Next.js 16 (App Router)
-- **LLM / チェーン**: LangChain.js（OpenAI, プロンプト, パーサー）
-- **言語・スタイル**: TypeScript, Tailwind CSS v4
-
----
-
-## クイックスタート
-
-
-```bash
-# 依存関係のインストール
-bun install
-
-# プロジェクト作成（参考）
-bun create next-app . --typescript --tailwind --eslint
-
-# 主要パッケージ
-bun add langchain @langchain/openai @langchain/community zod
-
-# 環境変数（.env.local）
-echo "OPENAI_API_KEY=sk-..." > .env.local
-
-# 開発サーバー起動
-bun run dev
-```
-
-ブラウザで http://localhost:3000 を開き、各デモ（/rag, /review, /workflow）にアクセスしてください。
 
 ---
 
 ## 設計方針
-1. LLM ロジックは lib/ai に集約する
+
+### 1. LLM ロジックは lib/ai に集約する
 
 - プロンプト生成
-
 - モデル設定
-
 - invoke の呼び出し
 
-これらはすべて /lib/ai 内で管理します。
+これらはすべて `/lib/ai` に閉じ込めます。
 
-API Route や UI 側に LangChain の詳細を漏らさないのが目的。
+API Route や UI 側に LangChain の詳細を漏らさないのが目的です。
 
-2. API Route は「橋渡し役」に徹する
+---
 
-- app/api/*/route.ts の責務は以下のみです。
+### 2. API Route は「橋渡し役」に徹する
+
+`app/api/*/route.ts` の責務は以下のみです。
 
 - リクエストのバリデーション
-
 - lib/ai の関数呼び出し
-
 - レスポンス整形
 
 ビジネスロジックやプロンプトは書きません。
 
-3. UI は fetch だけ行う
+---
 
-page.tsx では以下を守ります。
+### 3. UI は fetch だけ行う
+
+`page.tsx` では以下を守ります。
 
 - LLM の知識を持たない
-
 - prompt を直接書かない
-
 - API の戻り値を描画するだけ
 
 これにより UI の差し替えや再利用が容易になります。
 
+---
+
 ## 環境変数の設定
 
-.env.local を作成し、以下を設定してください。
+`.env.local` を作成し、以下を設定してください。
+
 ```bash
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
 ```
 
+
 Next.js の API Route と LangChain の両方で参照されます。
+
+---
+
+## 各機能の説明
+
+### /review（コードレビュー）
+
+- TypeScript / React コードを入力
+- 可読性、保守性、パフォーマンス、型安全性の観点でレビュー
+- 出力形式を固定し、安定したレスポンスを得る設計
+
+対応ファイル：
+
+- lib/ai/review.ts
+- app/api/review/route.ts
+- app/review/page.tsx
+
+---
+
+### /rag（簡易 RAG）
+
+- 複数ドキュメントを context として渡す
+- 質問に対して根拠付きで回答
+- 将来的に Embedding や Vector DB に差し替え可能な構造
+
+対応ファイル：
+
+- lib/ai/rag.ts
+- app/api/rag/route.ts
+- app/rag/page.tsx
+
+---
+
+### /workflow（LLM ワークフロー）
+
+- 要約 → 分類 → アクション提案 の 3 ステップ
+- 各ステップを順番に実行
+- 入力と出力を UI 上で可視化
+
+対応ファイル：
+
+- lib/ai/workflow.ts
+- app/api/workflow/route.ts
+- app/workflow/page.tsx
+
+---
+
+## 共通 LLM 設定
+
+`lib/ai/llm.ts` に以下を集約しています。
+
+- ChatOpenAI の初期化
+- モデル名
+- temperature
+- API Key の参照
+
+これにより、モデル変更やパラメータ調整を一箇所で行えます。
+
+---
+
+## この構成のメリット
+
+- 機能追加時に迷わない
+- LLM ロジックのテストがしやすい
+- UI / API / AI の責務が明確
+- 個人開発から実務レベルまでスケール可能
+
+---
+
+## 想定ユースケース
+
+- LLM を使った社内ツールの PoC
+- LangChain + Next.js の学習用
+- 複数 AI 機能を持つアプリの土台
+- プロンプト設計とアーキテクチャ検証
+
+---
